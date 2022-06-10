@@ -20,13 +20,6 @@ Function generateDoc()
 description: function that will generate the markdown documentation for the methods
 */
 Function generateDocForMethods()
-/*
-shields:
-invisible: https://img.shields.io/badge/-invisible-lightgrey
-preemptive - capable : https://img.shields.io/badge/preemptive-capable-brightgreen
-preemptive - incapable: https://img.shields.io/badge/preemptive-incapable-orange
-preemptive - indifferent: https://img.shields.io/badge/preemptive-indifferent-lightblue
-*/
 	ARRAY TEXT:C222($_path; 0)
 	METHOD GET PATHS:C1163(Path project method:K72:1; $_path)
 	var $attributes; $docuMDObject; $parameter : Object
@@ -43,7 +36,11 @@ preemptive - indifferent: https://img.shields.io/badge/preemptive-indifferent-li
 		$inKeyword:=False:C215
 		
 		METHOD GET CODE:C1190($_path{$i}; $code)
-		METHOD GET ATTRIBUTES:C1334($_path{$i}; $attributes)
+		
+		If ($isClass=False:C215)
+			METHOD GET ATTRIBUTES:C1334($_path{$i}; $attributes)
+			$docuMDObject.attributes:=$attributes
+		End if 
 		
 		$lines:=Split string:C1554($code; "\r")
 		$keywords:=This:C1470.keywords.copy()
@@ -120,8 +117,31 @@ preemptive - indifferent: https://img.shields.io/badge/preemptive-indifferent-li
 description: generate the markdown from the function/method definition
 */
 Function _markdownFromDefinition($definition : Object)->$markdown : Text
+/*
+shields:
+invisible: https://img.shields.io/badge/-invisible-lightgrey
+preemptive - capable : https://img.shields.io/badge/preemptive-capable-brightgreen
+preemptive - incapable: https://img.shields.io/badge/preemptive-incapable-orange
+preemptive - indifferent: https://img.shields.io/badge/preemptive-indifferent-lightblue
+*/
 	var $parameter : Object
-	$markdown:="# `"+$definition.name+"("
+	$markdown:=""
+	If ($definition.attributes#Null:C1517)
+		If ($definition.attributes.invisible)
+			$markdown+="![Invisible](https://img.shields.io/badge/-invisible-lightgrey) "
+		End if 
+		Case of 
+			: ($definition.attributes.preemptive="capable")
+				$markdown+="![Preemptive - Capable](https://img.shields.io/badge/preemptive-capable-brightgreen)"
+			: ($definition.attributes.preemptive="incapable")
+				$markdown+="![Preemptive - Incapable](https://img.shields.io/badge/preemptive-incapable-orange)"
+			: ($definition.attributes.preemptive="indifferent")
+				$markdown+="![Preemptive - Indifferent](https://img.shields.io/badge/preemptive-indifferent-lightblue)"
+		End case 
+		$markdown+="\n\n"
+	End if 
+	
+	$markdown+="# `"+$definition.name+"("
 	
 	If ($definition.parameters.length>0)
 		For each ($parameter; $definition.parameters)
@@ -140,17 +160,19 @@ Function _markdownFromDefinition($definition : Object)->$markdown : Text
 		$markdown+="\n\n## Parameters\n\n"
 		
 		For each ($parameter; $definition.parameters)
-			$markdown+=" - `"+$parameter.name+"`: "+$parameter.description+"\n"
+			
+			$markdown+="- `"+$parameter.name+"`"+(($parameter.description="") ? "" : ": "+$parameter.description)+"\n"
+			
 		End for each 
 	End if 
 	
 	If ($definition.return#Null:C1517)
 		$markdown+="\n\n## Return\n\n"
-		$markdown+="`"+$definition.return.name+"`: "+$definition.return.description
+		$markdown+="- `"+$definition.return.name+"`"+(($definition.return.description="") ? "" : ": "+$definition.return.description)+"\n"
 	End if 
 	
 	For each ($keyword; $definition)
-		If ($keyword#"parameters") && ($keyword#"return") && ($keyword#"name")
+		If ($keyword#"parameters") && ($keyword#"return") && ($keyword#"name") && ($keyword#"attributes")
 			$markdown+="\n\n## "+Uppercase:C13($keyword[[1]])+Substring:C12($keyword; 2)+"\n\n"
 			$markdown+=$definition[$keyword]
 		End if 
