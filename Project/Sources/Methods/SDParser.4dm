@@ -1,5 +1,5 @@
 //%attributes = {"shared":true}
-#DECLARE()
+#DECLARE()->$test : Object
 /**
 
 */
