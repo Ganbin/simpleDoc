@@ -1,9 +1,10 @@
-//%attributes = {"preemptive":"incapable"}
+//%attributes = {"invisible":true,"preemptive":"incapable"}
 #DECLARE($text : Text; $real : Real; $bool : Boolean)->$result : Object
 /**
 $text: text parameter
 $real: real parameter
 the definition can be on multpile line
+
 
   even with line break and support **markdown**
 
